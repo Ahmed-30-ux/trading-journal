@@ -127,7 +127,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2 no-print">
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={load} className="btn-secondary text-sm">⟳</motion.button>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => window.open('/api/trades/export/csv')} className="btn-secondary text-sm flex items-center gap-1.5">📥 CSV</motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => api.exportCsv()} className="btn-secondary text-sm flex items-center gap-1.5">📥 CSV</motion.button>
         </div>
       </div>
 

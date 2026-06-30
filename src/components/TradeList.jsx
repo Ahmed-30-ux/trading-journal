@@ -65,11 +65,7 @@ export default function TradeList() {
     if (!file) return
     setCsvImporting(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await fetch('/api/trades/import', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (data.error) { alert(`Import error: ${data.error}`); return }
+      const data = await api.importCsv(file)
       alert(`Imported ${data.imported} trades successfully!`)
       load()
     } catch (err) {
@@ -133,7 +129,7 @@ export default function TradeList() {
             {csvImporting ? '...' : '📥 Import CSV'}
           </motion.button>
           <input ref={fileRef} type="file" accept=".csv" onChange={handleCsvImport} className="hidden" />
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => window.open('/api/trades/export/csv')} className="btn-secondary text-sm h-[42px] whitespace-nowrap">📤 Export CSV</motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => api.exportCsv()} className="btn-secondary text-sm h-[42px] whitespace-nowrap">📤 Export CSV</motion.button>
           <Link to="/add">
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="btn-primary text-sm h-[42px] whitespace-nowrap">+ New Trade</motion.button>
           </Link>
