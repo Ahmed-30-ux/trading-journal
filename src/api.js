@@ -9,8 +9,6 @@ function load() {
       const data = JSON.parse(raw)
       trades = data.trades || []
       nextId = data.nextId || 1
-    } else {
-      seedDemoData()
     }
   } catch {
     trades = []
