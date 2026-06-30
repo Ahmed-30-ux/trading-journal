@@ -25,7 +25,8 @@ export default function Layout({ children }) {
 
   return (
     <div className={`flex h-screen overflow-hidden ${!sidebarOpen ? 'sidebar-collapsed' : ''}`}>
-      <aside className="w-64 shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)] flex flex-col transition-all duration-300 max-md:fixed max-md:h-full max-md:z-50 max-md:-translate-x-full max-md:data-[open=true]:translate-x-0"
+      <aside data-open={sidebarOpen ? 'true' : undefined}
+        className="w-64 shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)] flex flex-col transition-all duration-300 max-md:fixed max-md:h-full max-md:z-50 max-md:-translate-x-full max-md:data-[open=true]:translate-x-0"
         style={{ maxWidth: sidebarOpen ? '16rem' : '0', overflow: 'hidden' }}
       >
         <div className="p-6 border-b border-[var(--border-subtle)] flex items-center justify-between">
@@ -53,6 +54,7 @@ export default function Layout({ children }) {
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]'
                 }`
               }
+              onClick={() => setSidebarOpen(false)}
             >
               <span className="text-lg">{item.icon}</span>
               {sidebarOpen && <span className="nav-label">{item.label}</span>}
@@ -71,6 +73,9 @@ export default function Layout({ children }) {
       </aside>
 
       <main className="flex-1 overflow-y-auto relative">
+        {sidebarOpen && (
+          <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-40 bg-black/50 md:hidden" />
+        )}
         <div className="sticky top-0 z-40 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)] px-6 py-3 flex items-center justify-between no-print">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-[var(--text-muted)]">
