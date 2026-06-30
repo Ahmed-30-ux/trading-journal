@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'tradejournal_trades'
+const DATA_VERSION = 2
 let trades = []
 let nextId = 1
 
@@ -7,8 +8,12 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const data = JSON.parse(raw)
-      trades = data.trades || []
-      nextId = data.nextId || 1
+      if (data.version === DATA_VERSION) {
+        trades = data.trades || []
+        nextId = data.nextId || 1
+      } else {
+        localStorage.removeItem(STORAGE_KEY)
+      }
     }
   } catch {
     trades = []
@@ -17,7 +22,7 @@ function load() {
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ trades, nextId }))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: DATA_VERSION, trades, nextId }))
 }
 
 function calcPnl(direction, entry, exit, quantity, fees) {
