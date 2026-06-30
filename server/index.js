@@ -25,27 +25,31 @@ app.get('/api/stats', async (req, res) => {
   }
 })
 
-const distPath = path.join(__dirname, '..', 'dist')
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath))
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'))
-  })
-} else {
-  console.log('Dev mode: frontend served by Vite on port 5173')
-}
-
-async function start() {
-  if (process.env.DATABASE_URL) {
-    try {
-      await runMigration()
-    } catch (e) {
-      console.error('Migration failed, starting anyway:', e.message)
-    }
+if (process.env.VERCEL !== '1') {
+  const distPath = path.join(__dirname, '..', 'dist')
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath))
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'))
+    })
+  } else {
+    console.log('Dev mode: frontend served by Vite on port 5173')
   }
-  app.listen(PORT, () => {
-    console.log(`TradeJournal server running on http://localhost:${PORT}`)
+}
+
+if (process.env.DATABASE_URL) {
+  app.use(async (req, res, next) => {
+    if (!app.locals.migrated) {
+      try { await runMigration() }
+      catch (e) { console.error('Migration failed:', e.message) }
+      app.locals.migrated = true
+    }
+    next()
   })
 }
 
-start()
+export default app
+
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => console.log(`TradeJournal server running on http://localhost:${PORT}`))
+}
