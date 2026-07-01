@@ -44,7 +44,69 @@ export default function TradeForm() {
     checklist: '',
   })
 
-  const [existingSymbols, setExistingSymbols] = useState([])
+  const ALL_SYMBOLS = [
+    { symbol: 'AAPL', type: 'stock', label: 'Apple Inc.' },
+    { symbol: 'TSLA', type: 'stock', label: 'Tesla Inc.' },
+    { symbol: 'AMZN', type: 'stock', label: 'Amazon.com Inc.' },
+    { symbol: 'MSFT', type: 'stock', label: 'Microsoft Corp.' },
+    { symbol: 'GOOGL', type: 'stock', label: 'Alphabet Inc.' },
+    { symbol: 'META', type: 'stock', label: 'Meta Platforms Inc.' },
+    { symbol: 'NVDA', type: 'stock', label: 'NVIDIA Corp.' },
+    { symbol: 'AMD', type: 'stock', label: 'Advanced Micro Devices' },
+    { symbol: 'NFLX', type: 'stock', label: 'Netflix Inc.' },
+    { symbol: 'DIS', type: 'stock', label: 'Walt Disney Co.' },
+    { symbol: 'SPY', type: 'stock', label: 'SPDR S&P 500 ETF' },
+    { symbol: 'QQQ', type: 'stock', label: 'Invesco QQQ Trust' },
+    { symbol: 'VTI', type: 'stock', label: 'Vanguard Total Stock Market' },
+    { symbol: 'IWM', type: 'stock', label: 'Russell 2000 ETF' },
+    { symbol: 'TSM', type: 'stock', label: 'Taiwan Semiconductor' },
+    { symbol: 'JPM', type: 'stock', label: 'JPMorgan Chase & Co.' },
+    { symbol: 'V', type: 'stock', label: 'Visa Inc.' },
+    { symbol: 'WMT', type: 'stock', label: 'Walmart Inc.' },
+    { symbol: 'JNJ', type: 'stock', label: 'Johnson & Johnson' },
+    { symbol: 'PG', type: 'stock', label: 'Procter & Gamble Co.' },
+    { symbol: 'MA', type: 'stock', label: 'Mastercard Inc.' },
+    { symbol: 'UNH', type: 'stock', label: 'UnitedHealth Group Inc.' },
+    { symbol: 'HD', type: 'stock', label: 'The Home Depot Inc.' },
+    { symbol: 'BAC', type: 'stock', label: 'Bank of America Corp.' },
+    { symbol: 'XOM', type: 'stock', label: 'Exxon Mobil Corp.' },
+    { symbol: 'COIN', type: 'stock', label: 'Coinbase Global Inc.' },
+    { symbol: 'PLTR', type: 'stock', label: 'Palantir Technologies Inc.' },
+    { symbol: 'RIVN', type: 'stock', label: 'Rivian Automotive Inc.' },
+    { symbol: 'SNAP', type: 'stock', label: 'Snap Inc.' },
+    { symbol: 'UBER', type: 'stock', label: 'Uber Technologies Inc.' },
+    { symbol: 'BTC/USD', type: 'crypto', label: 'Bitcoin / US Dollar' },
+    { symbol: 'ETH/USD', type: 'crypto', label: 'Ethereum / US Dollar' },
+    { symbol: 'SOL/USD', type: 'crypto', label: 'Solana / US Dollar' },
+    { symbol: 'XRP/USD', type: 'crypto', label: 'Ripple / US Dollar' },
+    { symbol: 'DOGE/USD', type: 'crypto', label: 'Dogecoin / US Dollar' },
+    { symbol: 'ADA/USD', type: 'crypto', label: 'Cardano / US Dollar' },
+    { symbol: 'DOT/USD', type: 'crypto', label: 'Polkadot / US Dollar' },
+    { symbol: 'AVAX/USD', type: 'crypto', label: 'Avalanche / US Dollar' },
+    { symbol: 'MATIC/USD', type: 'crypto', label: 'Polygon / US Dollar' },
+    { symbol: 'LINK/USD', type: 'crypto', label: 'Chainlink / US Dollar' },
+    { symbol: 'EURUSD', type: 'forex', label: 'Euro / US Dollar' },
+    { symbol: 'GBPUSD', type: 'forex', label: 'British Pound / US Dollar' },
+    { symbol: 'USDJPY', type: 'forex', label: 'US Dollar / Japanese Yen' },
+    { symbol: 'USDCHF', type: 'forex', label: 'US Dollar / Swiss Franc' },
+    { symbol: 'AUDUSD', type: 'forex', label: 'Australian Dollar / US Dollar' },
+    { symbol: 'USDCAD', type: 'forex', label: 'US Dollar / Canadian Dollar' },
+    { symbol: 'NZDUSD', type: 'forex', label: 'New Zealand Dollar / US Dollar' },
+    { symbol: 'EURGBP', type: 'forex', label: 'Euro / British Pound' },
+    { symbol: 'EURJPY', type: 'forex', label: 'Euro / Japanese Yen' },
+    { symbol: 'GBPJPY', type: 'forex', label: 'British Pound / Japanese Yen' },
+    { symbol: 'ES', type: 'futures', label: 'S&P 500 E-mini Futures' },
+    { symbol: 'NQ', type: 'futures', label: 'Nasdaq 100 E-mini Futures' },
+    { symbol: 'YM', type: 'futures', label: 'Dow Jones E-mini Futures' },
+    { symbol: 'CL', type: 'futures', label: 'Crude Oil Futures' },
+    { symbol: 'GC', type: 'futures', label: 'Gold Futures' },
+    { symbol: 'SI', type: 'futures', label: 'Silver Futures' },
+    { symbol: 'NG', type: 'futures', label: 'Natural Gas Futures' },
+    { symbol: 'ZB', type: 'futures', label: '30-Year Treasury Bond Futures' },
+    { symbol: 'ZN', type: 'futures', label: '10-Year Treasury Note Futures' },
+    { symbol: '6E', type: 'futures', label: 'Euro FX Futures' },
+  ]
+
   const [symbolSuggestions, setSymbolSuggestions] = useState([])
   const [showSymbolDropdown, setShowSymbolDropdown] = useState(false)
 
@@ -64,9 +126,9 @@ export default function TradeForm() {
 
   useEffect(() => {
     api.getTrades().then(res => {
-      const symbols = [...new Set(res.trades.map(t => t.symbol).filter(Boolean))]
-      setExistingSymbols(symbols)
-    }).catch(e => console.warn('Failed to load symbols:', e))
+      const used = new Set(res.trades.map(t => t.symbol).filter(Boolean))
+      setSymbolSuggestions(ALL_SYMBOLS.filter(s => used.has(s.symbol) || !used.size).slice(0, 10))
+    }).catch(() => setSymbolSuggestions(ALL_SYMBOLS.slice(0, 10)))
   }, [])
 
   useEffect(() => {
@@ -187,19 +249,17 @@ export default function TradeForm() {
   function handleSymbolInput(value) {
     const upper = value.toUpperCase()
     update('symbol', upper)
-    if (upper.length > 0) {
-      setSymbolSuggestions(existingSymbols.filter(s => s.includes(upper)).slice(0, 8))
-      setShowSymbolDropdown(true)
-    } else {
-      setSymbolSuggestions([])
-      setShowSymbolDropdown(false)
-    }
+    const filtered = upper.length > 0
+      ? ALL_SYMBOLS.filter(s => s.symbol.includes(upper))
+      : ALL_SYMBOLS
+    setSymbolSuggestions(filtered.slice(0, 10))
+    setShowSymbolDropdown(filtered.length > 0)
   }
 
-  function selectSymbol(symbol) {
-    update('symbol', symbol)
+  function selectSymbol(item) {
+    update('symbol', item.symbol)
+    update('marketType', item.type)
     setShowSymbolDropdown(false)
-    setSymbolSuggestions([])
   }
 
   function handleScreenshotUpload(e) {
@@ -238,12 +298,14 @@ export default function TradeForm() {
           </div>
           <div className="relative">
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Symbol</label>
-            <input type="text" value={form.symbol} onChange={e => handleSymbolInput(e.target.value)} onFocus={() => { const filtered = form.symbol.length > 0 ? existingSymbols.filter(s => s.includes(form.symbol)) : existingSymbols; setSymbolSuggestions(filtered.slice(0, 8)); setShowSymbolDropdown(filtered.length > 0) }} onBlur={() => setTimeout(() => setShowSymbolDropdown(false), 200)} placeholder="e.g. AAPL, BTC/USD, EURUSD" required autoComplete="off" />
+            <input type="text" value={form.symbol} onChange={e => handleSymbolInput(e.target.value)} onFocus={() => { const filtered = form.symbol.length > 0 ? ALL_SYMBOLS.filter(s => s.symbol.includes(form.symbol)) : ALL_SYMBOLS; setSymbolSuggestions(filtered.slice(0, 10)); setShowSymbolDropdown(filtered.length > 0) }} onBlur={() => setTimeout(() => setShowSymbolDropdown(false), 200)} placeholder="e.g. AAPL, BTC/USD, EURUSD" required autoComplete="off" />
             {showSymbolDropdown && symbolSuggestions.length > 0 && (
               <div className="absolute z-20 top-full left-0 right-0 mt-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xl overflow-hidden">
                 {symbolSuggestions.map(s => (
-                  <button key={s} type="button" onMouseDown={() => selectSymbol(s)} className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)] transition-colors">
-                    {s}
+                  <button key={s.symbol} type="button" onMouseDown={() => selectSymbol(s)} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)] transition-colors">
+                    <span className="font-semibold">{s.symbol}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[rgba(255,255,255,0.05)] text-[var(--text-muted)]">{s.type}</span>
+                    <span className="text-xs text-[var(--text-muted)] ml-auto">{s.label}</span>
                   </button>
                 ))}
               </div>
