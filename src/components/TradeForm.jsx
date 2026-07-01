@@ -44,6 +44,10 @@ export default function TradeForm() {
     checklist: '',
   })
 
+  const [existingSymbols, setExistingSymbols] = useState([])
+  const [symbolSuggestions, setSymbolSuggestions] = useState([])
+  const [showSymbolDropdown, setShowSymbolDropdown] = useState(false)
+
   const [screenshots, setScreenshots] = useState([])
   const [checklistItems, setChecklistItems] = useState([
     { id: 1, text: 'Identified clear setup', done: false },
@@ -57,6 +61,13 @@ export default function TradeForm() {
   const [roiPreview, setRoiPreview] = useState(0)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    api.getTrades().then(res => {
+      const symbols = [...new Set(res.trades.map(t => t.symbol).filter(Boolean))]
+      setExistingSymbols(symbols)
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (isEdit) {
@@ -173,6 +184,24 @@ export default function TradeForm() {
     setChecklistItems(prev => prev.filter(item => item.id !== id))
   }
 
+  function handleSymbolInput(value) {
+    const upper = value.toUpperCase()
+    update('symbol', upper)
+    if (upper.length > 0) {
+      setSymbolSuggestions(existingSymbols.filter(s => s.includes(upper)).slice(0, 8))
+      setShowSymbolDropdown(true)
+    } else {
+      setSymbolSuggestions([])
+      setShowSymbolDropdown(false)
+    }
+  }
+
+  function selectSymbol(symbol) {
+    update('symbol', symbol)
+    setShowSymbolDropdown(false)
+    setSymbolSuggestions([])
+  }
+
   function handleScreenshotUpload(e) {
     const files = Array.from(e.target.files || [])
     files.forEach(file => {
@@ -207,9 +236,18 @@ export default function TradeForm() {
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Date</label>
             <input type="date" value={form.date} onChange={e => update('date', e.target.value)} required />
           </div>
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Symbol</label>
-            <input type="text" value={form.symbol} onChange={e => update('symbol', e.target.value.toUpperCase())} placeholder="e.g. AAPL, BTC/USD, EURUSD" required />
+            <input type="text" value={form.symbol} onChange={e => handleSymbolInput(e.target.value)} onFocus={() => { if (form.symbol.length > 0) { setSymbolSuggestions(existingSymbols.filter(s => s.includes(form.symbol)).slice(0, 8)); setShowSymbolDropdown(true) } }} onBlur={() => setTimeout(() => setShowSymbolDropdown(false), 200)} placeholder="e.g. AAPL, BTC/USD, EURUSD" required autoComplete="off" />
+            {showSymbolDropdown && symbolSuggestions.length > 0 && (
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xl overflow-hidden">
+                {symbolSuggestions.map(s => (
+                  <button key={s} type="button" onMouseDown={() => selectSymbol(s)} className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)] transition-colors">
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
             {errors.symbol && <p className="text-[#ef4444] text-xs mt-1">{errors.symbol}</p>}
           </div>
           <div>
