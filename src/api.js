@@ -3,26 +3,30 @@ const DATA_VERSION = 2
 let trades = []
 let nextId = 1
 
-function load() {
+function save() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const data = JSON.parse(raw)
-      if (data.version === DATA_VERSION) {
-        trades = data.trades || []
-        nextId = data.nextId || 1
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-      }
-    }
-  } catch {
-    trades = []
-    nextId = 1
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: DATA_VERSION, trades, nextId }))
+  } catch (e) {
+    console.error('Failed to save trades:', e)
   }
 }
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: DATA_VERSION, trades, nextId }))
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const data = JSON.parse(raw)
+    if (data && typeof data === 'object' && data.version === DATA_VERSION) {
+      trades = Array.isArray(data.trades) ? data.trades : []
+      nextId = typeof data.nextId === 'number' ? data.nextId : 1
+    } else {
+      localStorage.removeItem(STORAGE_KEY)
+    }
+  } catch (e) {
+    console.warn('Failed to load trades, starting fresh:', e.message)
+    trades = []
+    nextId = 1
+  }
 }
 
 function calcPnl(direction, entry, exit, quantity, fees) {
@@ -34,66 +38,6 @@ function calcPnl(direction, entry, exit, quantity, fees) {
 function calcRoi(pnl, entry, quantity) {
   if (!entry || !quantity || entry === 0) return 0
   return (pnl / (entry * quantity)) * 100
-}
-
-function seedDemoData() {
-  const symbols = ['AAPL', 'BTC/USD', 'EURUSD', 'TSLA', 'GOOGL', 'ETH/USD', 'MSFT', 'NVDA', 'AMZN', 'GC=F', 'CL=F', 'SPY']
-  const markets = ['stock', 'forex', 'crypto', 'crypto', 'stock', 'crypto', 'stock', 'stock', 'stock', 'futures', 'futures', 'stock']
-  const strategies = ['breakout', 'swing', 'scalping', 'momentum', 'reversal', 'day trading', 'position']
-  const emotions = ['confident', 'anxious', 'neutral', 'disciplined', 'greedy', 'fearful']
-  const ratings = ['A', 'B', 'C', 'D', 'F']
-  const tags = ['earnings', 'breakout', 'high-risk', 'conservative', 'news-based', 'technical', 'trend-following']
-  const now = new Date()
-
-  for (let i = 0; i < 35; i++) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - Math.floor(Math.random() * 90))
-    const dir = Math.random() > 0.5 ? 'long' : 'short'
-    const idx = Math.floor(Math.random() * symbols.length)
-    const sym = symbols[idx]
-    const market = markets[idx]
-    const entry = 50 + Math.random() * 450
-    const qty = 1 + Math.floor(Math.random() * 100)
-    const isWin = Math.random() > 0.4
-    const pnlMult = isWin ? 1 : -1
-    const pnlAmount = (Math.random() * 500 + 10) * pnlMult
-    const exit = dir === 'long' ? entry + pnlAmount / qty : entry - pnlAmount / qty
-    const fees = Math.random() * 10
-    const pnl = calcPnl(dir, entry, exit, qty, fees)
-    const roi = calcRoi(pnl, entry, qty)
-
-    trades.push({
-      id: nextId++,
-      date: d.toISOString().split('T')[0],
-      symbol: sym,
-      marketType: market,
-      direction: dir,
-      entryPrice: Math.round(entry * 100) / 100,
-      exitPrice: Math.round(exit * 100) / 100,
-      quantity: qty,
-      stopLoss: Math.round((entry * (dir === 'long' ? 0.95 : 1.05)) * 100) / 100,
-      takeProfit: Math.round((entry * (dir === 'long' ? 1.1 : 0.9)) * 100) / 100,
-      fees: Math.round(fees * 100) / 100,
-      strategy: strategies[Math.floor(Math.random() * strategies.length)],
-      emotion: emotions[Math.floor(Math.random() * emotions.length)],
-      rating: ratings[Math.floor(Math.random() * ratings.length)],
-      tags: tags.slice(0, 1 + Math.floor(Math.random() * 3)).join(','),
-      notes: 'Demo trade for illustration',
-      currentPrice: null,
-      checklist: JSON.stringify([
-        { id: 1, text: 'Identified clear setup', done: true },
-        { id: 2, text: 'Risk/Reward ≥ 1:2', done: Math.random() > 0.3 },
-        { id: 3, text: 'Position size calculated', done: Math.random() > 0.2 },
-        { id: 4, text: 'Stop loss placed', done: true },
-        { id: 5, text: 'Take profit placed', done: Math.random() > 0.3 },
-      ]),
-      pnl: Math.round(pnl * 100) / 100,
-      roi: Math.round(roi * 100) / 100,
-      createdAt: d.toISOString(),
-      updatedAt: d.toISOString(),
-    })
-  }
-  save()
 }
 
 function getStats() {
