@@ -66,7 +66,7 @@ export default function TradeForm() {
     api.getTrades().then(res => {
       const symbols = [...new Set(res.trades.map(t => t.symbol).filter(Boolean))]
       setExistingSymbols(symbols)
-    }).catch(() => {})
+    }).catch(e => console.warn('Failed to load symbols:', e))
   }, [])
 
   useEffect(() => {
@@ -238,7 +238,7 @@ export default function TradeForm() {
           </div>
           <div className="relative">
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Symbol</label>
-            <input type="text" value={form.symbol} onChange={e => handleSymbolInput(e.target.value)} onFocus={() => { if (form.symbol.length > 0) { setSymbolSuggestions(existingSymbols.filter(s => s.includes(form.symbol)).slice(0, 8)); setShowSymbolDropdown(true) } }} onBlur={() => setTimeout(() => setShowSymbolDropdown(false), 200)} placeholder="e.g. AAPL, BTC/USD, EURUSD" required autoComplete="off" />
+            <input type="text" value={form.symbol} onChange={e => handleSymbolInput(e.target.value)} onFocus={() => { const filtered = form.symbol.length > 0 ? existingSymbols.filter(s => s.includes(form.symbol)) : existingSymbols; setSymbolSuggestions(filtered.slice(0, 8)); setShowSymbolDropdown(filtered.length > 0) }} onBlur={() => setTimeout(() => setShowSymbolDropdown(false), 200)} placeholder="e.g. AAPL, BTC/USD, EURUSD" required autoComplete="off" />
             {showSymbolDropdown && symbolSuggestions.length > 0 && (
               <div className="absolute z-20 top-full left-0 right-0 mt-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xl overflow-hidden">
                 {symbolSuggestions.map(s => (
