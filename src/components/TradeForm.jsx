@@ -44,6 +44,7 @@ export default function TradeForm() {
     checklist: '',
   })
 
+  const [screenshots, setScreenshots] = useState([])
   const [checklistItems, setChecklistItems] = useState([
     { id: 1, text: 'Identified clear setup', done: false },
     { id: 2, text: 'Risk/Reward ≥ 1:2', done: false },
@@ -80,6 +81,12 @@ export default function TradeForm() {
             currentPrice: trade.currentPrice != null ? String(trade.currentPrice) : '',
             checklist: trade.checklist || '',
           })
+          if (trade.screenshots) {
+            try {
+              const saved = JSON.parse(trade.screenshots)
+              if (Array.isArray(saved)) setScreenshots(saved)
+            } catch {}
+          }
           if (trade.checklist) {
             try {
               const saved = JSON.parse(trade.checklist)
@@ -126,6 +133,7 @@ export default function TradeForm() {
         takeProfit: form.takeProfit ? parseFloat(form.takeProfit) : null,
         fees: parseFloat(form.fees) || 0,
         currentPrice: form.currentPrice ? parseFloat(form.currentPrice) : null,
+        screenshots: JSON.stringify(screenshots),
         checklist: JSON.stringify(checklistItems),
       }
       if (isEdit) await api.updateTrade(id, data)
@@ -163,6 +171,23 @@ export default function TradeForm() {
 
   function removeChecklistItem(id) {
     setChecklistItems(prev => prev.filter(item => item.id !== id))
+  }
+
+  function handleScreenshotUpload(e) {
+    const files = Array.from(e.target.files || [])
+    files.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setScreenshots(prev => [...prev, ev.target.result])
+      }
+      reader.readAsDataURL(file)
+    })
+    if (e.target) e.target.value = ''
+  }
+
+  function removeScreenshot(index) {
+    setScreenshots(prev => prev.filter((_, i) => i !== index))
   }
 
   const isOpen = !form.exitPrice && !isEdit
@@ -294,6 +319,21 @@ export default function TradeForm() {
           <div className="mt-4">
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Notes</label>
             <textarea rows={3} value={form.notes} onChange={e => update('notes', e.target.value)} placeholder="Trade notes, reasoning, lessons learned..." className="resize-none" />
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Screenshots <span className="text-xs text-[var(--text-muted)]">(max 5MB each)</span></label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {screenshots.map((src, i) => (
+                <div key={i} className="relative group">
+                  <img src={src} alt={`Screenshot ${i + 1}`} className="w-20 h-20 rounded-lg object-cover border border-[var(--border-subtle)]" />
+                  <button type="button" onClick={() => removeScreenshot(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--color-red)] text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                </div>
+              ))}
+              <label className="w-20 h-20 rounded-lg border-2 border-dashed border-[var(--border-subtle)] hover:border-[var(--color-accent)] transition-colors flex items-center justify-center cursor-pointer text-[var(--text-muted)] hover:text-[var(--color-accent)]">
+                <span className="text-2xl">+</span>
+                <input type="file" accept="image/*" multiple onChange={handleScreenshotUpload} className="hidden" />
+              </label>
+            </div>
           </div>
         </div>
 

@@ -10,8 +10,16 @@
   --text-primary: #e1e4e8;
   --text-secondary: #8b949e;
   --text-muted: #6e7681;
-  --color-accent: #6366f1;
-  --color-accent-bg: rgba(99, 102, 241, 0.1);
+  --color-green: #22c55e;
+  --color-green-bg: rgba(34, 197, 94, 0.1);
+  --color-red: #ef4444;
+  --color-red-bg: rgba(239, 68, 68, 0.1);
+  --color-accent: #10b981;
+  --color-accent-bg: rgba(16, 185, 129, 0.1);
+  --color-gold: #f59e0b;
+  --color-gold-bg: rgba(245, 158, 11, 0.1);
+  --color-purple: #6366f1;
+  --color-purple-bg: rgba(99, 102, 241, 0.1);
   --input-bg: rgba(255, 255, 255, 0.03);
   --card-shadow: none;
 }
@@ -26,8 +34,16 @@
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
-  --color-accent: #4f46e5;
-  --color-accent-bg: rgba(79, 70, 229, 0.08);
+  --color-green: #16a34a;
+  --color-green-bg: rgba(22, 163, 74, 0.08);
+  --color-red: #dc2626;
+  --color-red-bg: rgba(220, 38, 38, 0.08);
+  --color-accent: #059669;
+  --color-accent-bg: rgba(5, 150, 105, 0.08);
+  --color-gold: #d97706;
+  --color-gold-bg: rgba(217, 119, 6, 0.08);
+  --color-purple: #4f46e5;
+  --color-purple-bg: rgba(79, 70, 229, 0.08);
   --input-bg: #ffffff;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -51,6 +67,16 @@ body {
   50% { transform: translateY(-6px); }
 }
 
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.3); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
   background-size: 200% 100%;
@@ -59,6 +85,14 @@ body {
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -76,10 +110,16 @@ body {
 
 .glass-card:hover {
   border-color: var(--border-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(99, 102, 241, 0.05), rgba(245, 158, 11, 0.03));
+  border: 1px solid rgba(16, 185, 129, 0.1);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #22c55e);
+  background: linear-gradient(135deg, #10b981, #6366f1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -87,6 +127,20 @@ body {
 
 .gradient-text-red {
   background: linear-gradient(135deg, #ef4444, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-green {
+  background: linear-gradient(135deg, #22c55e, #10b981);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -106,7 +160,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 input::placeholder, textarea::placeholder {
@@ -116,7 +170,7 @@ input::placeholder, textarea::placeholder {
 select option { background: var(--bg-card); color: var(--text-primary); }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   padding: 10px 24px;
@@ -129,7 +183,7 @@ select option { background: var(--bg-card); color: var(--text-primary); }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
 }
 
 .btn-primary:active { transform: translateY(0); }
@@ -173,6 +227,19 @@ select option { background: var(--bg-card); color: var(--text-primary); }
 .btn-danger:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+.hero-stat {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-stat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(16, 185, 129, 0.08), transparent 70%);
+  pointer-events: none;
 }
 
 @media print {

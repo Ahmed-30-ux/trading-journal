@@ -29,6 +29,7 @@ export default function TradeList() {
   const [page, setPage] = useState(1)
   const [deleting, setDeleting] = useState(null)
   const [csvImporting, setCsvImporting] = useState(false)
+  const [previewScreenshot, setPreviewScreenshot] = useState(null)
   const fileRef = useRef(null)
   const limit = 20
 
@@ -159,6 +160,7 @@ export default function TradeList() {
                     { key: null, label: 'ROI' },
                     { key: null, label: 'Rating' },
                     { key: null, label: 'Tags' },
+                    { key: null, label: 'SS' },
                     { key: null, label: '' },
                   ].map(col => (
                     <th key={col.label}
@@ -200,6 +202,18 @@ export default function TradeList() {
                           )) : <span className="text-[var(--text-muted)]">-</span>}
                         </div>
                       </td>
+                      <td className="px-4 py-3.5 text-center">
+                        {trade.screenshots ? (() => {
+                          try {
+                            const shots = JSON.parse(trade.screenshots)
+                            return Array.isArray(shots) && shots.length > 0 ? (
+                              <button onClick={() => setPreviewScreenshot(shots)} className="text-[var(--text-muted)] hover:text-[var(--color-accent)] transition-colors">
+                                📷 <span className="text-[10px]">{shots.length}</span>
+                              </button>
+                            ) : <span className="text-[var(--text-muted)]">-</span>
+                          } catch { return <span className="text-[var(--text-muted)]">-</span> }
+                        })() : <span className="text-[var(--text-muted)]">-</span>}
+                      </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Link to={`/edit/${trade.id}`} className="p-1.5 rounded-lg hover:bg-[rgba(255,255,255,0.06)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">✏️</Link>
@@ -225,6 +239,19 @@ export default function TradeList() {
           ))}
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn-secondary text-sm px-3 py-2 disabled:opacity-30">Next →</button>
         </motion.div>
+      )}
+
+      {previewScreenshot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setPreviewScreenshot(null)}>
+          <div className="relative max-w-3xl max-h-[90vh] mx-4" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setPreviewScreenshot(null)} className="absolute -top-10 right-0 text-white/60 hover:text-white text-sm transition-colors">Close ✕</button>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {previewScreenshot.map((src, i) => (
+                <img key={i} src={src} alt={`Screenshot ${i + 1}`} className="max-h-[80vh] rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

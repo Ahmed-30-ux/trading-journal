@@ -230,7 +230,7 @@ export const api = {
   },
 
   exportCsv() {
-    const headers = ['date', 'symbol', 'marketType', 'direction', 'entryPrice', 'exitPrice', 'quantity', 'stopLoss', 'takeProfit', 'fees', 'strategy', 'emotion', 'rating', 'tags', 'notes', 'pnl', 'roi']
+    const headers = ['date', 'symbol', 'marketType', 'direction', 'entryPrice', 'exitPrice', 'quantity', 'stopLoss', 'takeProfit', 'fees', 'strategy', 'emotion', 'rating', 'tags', 'notes', 'screenshots', 'checklist', 'pnl', 'roi']
     const rows = trades.map(t => headers.map(h => t[h] ?? '').join(','))
     const csv = [headers.join(','), ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -284,6 +284,7 @@ export const api = {
               tags: raw.tags || '',
               notes: raw.notes || '',
               currentPrice: null,
+              screenshots: raw.screenshots || '[]',
               checklist: raw.checklist || '',
               pnl: Math.round(pnl * 100) / 100,
               roi: exitPrice ? Math.round(calcRoi(pnl, entryPrice, quantity) * 100) / 100 : 0,

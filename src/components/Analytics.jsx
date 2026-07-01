@@ -6,6 +6,8 @@ import {
 } from 'chart.js'
 import { Line, Bar, Pie } from 'react-chartjs-2'
 import { api } from '../api.js'
+import CalendarHeatmap from './CalendarHeatmap.jsx'
+import SessionAnalysis from './SessionAnalysis.jsx'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler)
 
@@ -128,10 +130,10 @@ export default function Analytics() {
               labels: equityLabels,
               datasets: [{
                 label: 'Equity', data: equityData,
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
-                pointBackgroundColor: '#6366f1',
-                pointBorderColor: '#6366f1',
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#10b981',
                 pointRadius: 3,
                 pointHoverRadius: 5,
                 tension: 0.3,
@@ -163,8 +165,8 @@ export default function Analytics() {
               datasets: [{
                 label: 'Equity',
                 data: equityData,
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.08)',
                 pointRadius: 2,
                 tension: 0.3,
                 fill: true,
@@ -190,24 +192,32 @@ export default function Analytics() {
               },
             }} />
           </div>
-          <div className="mt-4 p-3 rounded-xl bg-[rgba(239,68,68,0.08)]">
-            <p className="text-sm text-[var(--text-secondary)]">Max Drawdown: <span className="font-bold text-[#ef4444]">{stats.maxDrawdown}%</span></p>
+          <div className="mt-4 p-3 rounded-xl bg-[var(--color-red-bg)]">
+            <p className="text-sm text-[var(--text-secondary)]">Max Drawdown: <span className="font-bold text-[var(--color-red)]">{stats.maxDrawdown}%</span></p>
           </div>
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass-card rounded-2xl p-6">
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <CalendarHeatmap />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+        <SessionAnalysis />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Key Metrics</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Trades', value: stats.totalTrades, color: 'text-[var(--text-primary)]' },
-            { label: 'Open Positions', value: stats.openTrades, color: 'text-[#6366f1]' },
-            { label: 'Win Rate', value: `${stats.winRate}%`, color: stats.winRate >= 50 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-            { label: 'Profit Factor', value: stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2), color: stats.profitFactor >= 1.5 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-            { label: 'Total P&L', value: formatCurrency(stats.totalPnl), color: stats.totalPnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-            { label: 'Max Drawdown', value: `${stats.maxDrawdown}%`, color: 'text-[#ef4444]' },
-            { label: 'Best Streak', value: `${stats.longestWinStreak} wins`, color: 'text-[#22c55e]' },
-            { label: 'Worst Streak', value: `${stats.longestLossStreak} losses`, color: 'text-[#ef4444]' },
+            { label: 'Open Positions', value: stats.openTrades, color: 'text-[var(--color-purple)]' },
+            { label: 'Win Rate', value: `${stats.winRate}%`, color: stats.winRate >= 50 ? 'text-[var(--color-green)]' : 'text-[var(--color-red)]' },
+            { label: 'Profit Factor', value: stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2), color: stats.profitFactor >= 1.5 ? 'text-[var(--color-green)]' : 'text-[var(--color-red)]' },
+            { label: 'Total P&L', value: formatCurrency(stats.totalPnl), color: stats.totalPnl >= 0 ? 'text-[var(--color-green)]' : 'text-[var(--color-red)]' },
+            { label: 'Max Drawdown', value: `${stats.maxDrawdown}%`, color: 'text-[var(--color-red)]' },
+            { label: 'Best Streak', value: `${stats.longestWinStreak} wins`, color: 'text-[var(--color-green)]' },
+            { label: 'Worst Streak', value: `${stats.longestLossStreak} losses`, color: 'text-[var(--color-red)]' },
           ].map((m, i) => (
             <div key={m.label} className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)]">
               <p className="text-xs text-[var(--text-muted)] mb-1">{m.label}</p>
@@ -217,7 +227,7 @@ export default function Analytics() {
         </div>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass-card rounded-2xl p-6">
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }} className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Strategy Performance</h3>
         {stats.strategyStats?.length > 0 ? (
           <div className="space-y-3">
@@ -227,7 +237,7 @@ export default function Analytics() {
                   <p className="text-sm font-medium text-[var(--text-primary)] capitalize">{s.strategy}</p>
                   <p className="text-xs text-[var(--text-muted)]">{s.trades} trades · {s.winRate}% win rate</p>
                 </div>
-                <span className={`text-sm font-bold ${s.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>{formatCurrency(s.pnl)}</span>
+                <span className={`text-sm font-bold ${s.pnl >= 0 ? 'text-[var(--color-green)]' : 'text-[var(--color-red)]'}`}>{formatCurrency(s.pnl)}</span>
               </motion.div>
             ))}
           </div>
