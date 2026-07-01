@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { api } from '../api.js'
 
@@ -89,6 +90,7 @@ function EquityChart({ data }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const [stats, setStats] = useState(null)
   const [recentTrades, setRecentTrades] = useState([])
   const [loading, setLoading] = useState(true)
@@ -240,7 +242,7 @@ export default function Dashboard() {
             <span className="text-6xl mb-6 block">📊</span>
             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-3">Welcome to Your Trading Journal</h2>
             <p className="text-[var(--text-secondary)] text-sm mb-8">Track your trades, analyze performance, and improve your strategy with detailed analytics and insights.</p>
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="btn-primary text-base px-8 py-3" onClick={() => window.location.hash = '#/trades'}>
+            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="btn-primary text-base px-8 py-3" onClick={() => navigate('/trades')}>
               + Add Your First Trade
             </motion.button>
           </motion.div>
