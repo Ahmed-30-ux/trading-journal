@@ -31,7 +31,8 @@ export default function TradeForm() {
     direction: 'long',
     entryPrice: '',
     exitPrice: '',
-    quantity: '',
+    margin: '',
+    leverage: '1',
     stopLoss: '',
     takeProfit: '',
     fees: '0',
@@ -142,7 +143,8 @@ export default function TradeForm() {
             direction: trade.direction,
             entryPrice: String(trade.entryPrice),
             exitPrice: trade.exitPrice != null ? String(trade.exitPrice) : '',
-            quantity: String(trade.quantity),
+            margin: String(trade.margin || (trade.entryPrice * trade.quantity) || ''),
+            leverage: String(trade.leverage || '1'),
             stopLoss: trade.stopLoss != null ? String(trade.stopLoss) : '',
             takeProfit: trade.takeProfit != null ? String(trade.takeProfit) : '',
             fees: String(trade.fees || 0),
@@ -174,20 +176,26 @@ export default function TradeForm() {
   useEffect(() => {
     const ep = parseFloat(form.entryPrice)
     const exp = parseFloat(form.exitPrice)
-    const qty = parseFloat(form.quantity)
+    const margin = parseFloat(form.margin)
+    const leverage = parseFloat(form.leverage) || 1
     const f = parseFloat(form.fees) || 0
-    if (!isNaN(ep) && !isNaN(qty)) {
+    const qty = (!isNaN(ep) && !isNaN(margin) && ep > 0) ? (margin * leverage) / ep : 0
+    if (!isNaN(ep) && qty > 0) {
       const pnl = !isNaN(exp) ? calcPnl(form.direction, ep, exp, qty, f) : 0
       setPnlPreview(pnl)
       setRoiPreview(calcRoi(pnl, ep, qty))
+    } else {
+      setPnlPreview(0)
+      setRoiPreview(0)
     }
-  }, [form.entryPrice, form.exitPrice, form.quantity, form.fees, form.direction])
+  }, [form.entryPrice, form.exitPrice, form.margin, form.leverage, form.fees, form.direction])
 
   function validate() {
     const errs = {}
     if (!form.symbol.trim()) errs.symbol = 'Symbol is required'
     if (!form.entryPrice || parseFloat(form.entryPrice) <= 0) errs.entryPrice = 'Valid entry price required'
-    if (!form.quantity || parseFloat(form.quantity) <= 0) errs.quantity = 'Valid quantity required'
+    if (!form.margin || parseFloat(form.margin) <= 0) errs.margin = 'Valid margin required'
+    if (!form.leverage || parseFloat(form.leverage) < 1) errs.leverage = 'Leverage must be at least 1x'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -197,11 +205,17 @@ export default function TradeForm() {
     if (!validate()) return
     setSaving(true)
     try {
+      const margin = parseFloat(form.margin)
+      const leverage = parseFloat(form.leverage) || 1
+      const ep = parseFloat(form.entryPrice)
+      const quantity = ep > 0 ? (margin * leverage) / ep : 0
       const data = {
         ...form,
-        entryPrice: parseFloat(form.entryPrice),
+        entryPrice: ep,
         exitPrice: form.exitPrice ? parseFloat(form.exitPrice) : null,
-        quantity: parseFloat(form.quantity),
+        margin,
+        leverage,
+        quantity: Math.round(quantity * 10000) / 10000,
         stopLoss: form.stopLoss ? parseFloat(form.stopLoss) : null,
         takeProfit: form.takeProfit ? parseFloat(form.takeProfit) : null,
         fees: parseFloat(form.fees) || 0,
@@ -347,9 +361,25 @@ export default function TradeForm() {
               <input type="number" step="any" value={form.exitPrice} onChange={e => update('exitPrice', e.target.value)} placeholder="Leave empty for open" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Quantity</label>
-              <input type="number" step="any" value={form.quantity} onChange={e => update('quantity', e.target.value)} placeholder="0" required />
-              {errors.quantity && <p className="text-[#ef4444] text-xs mt-1">{errors.quantity}</p>}
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Margin ($)</label>
+              <input type="number" step="any" value={form.margin} onChange={e => update('margin', e.target.value)} placeholder="e.g. 1000" required />
+              {errors.margin && <p className="text-[#ef4444] text-xs mt-1">{errors.margin}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Leverage</label>
+              <div className="flex gap-1">
+                {[1, 2, 5, 10, 20, 50, 100, 200].map(l => (
+                  <button key={l} type="button" onClick={() => update('leverage', String(l))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      form.leverage === String(l)
+                        ? 'bg-[var(--color-accent-bg)] text-[var(--color-accent)] border border-[rgba(16,185,129,0.3)]'
+                        : 'bg-[rgba(255,255,255,0.03)] text-[var(--text-muted)] border border-transparent hover:border-[var(--border-hover)]'
+                    }`}
+                  >{l}x</button>
+                ))}
+              </div>
+              <input type="number" min="1" step="1" value={form.leverage} onChange={e => update('leverage', e.target.value)} className="mt-2" placeholder="Custom" />
+              {errors.leverage && <p className="text-[#ef4444] text-xs mt-1">{errors.leverage}</p>}
             </div>
           </div>
           {!form.exitPrice && (
